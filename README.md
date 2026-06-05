@@ -11,6 +11,7 @@ It includes a trigger for inbound Kapso/WhatsApp webhook events and an action no
 [Credentials](#credentials)
 [Compatibility](#compatibility)
 [Usage](#usage)
+[Example workflows](#example-workflows)
 [Local testing](#local-testing)
 [Resources](#resources)
 [Version history](#version-history)
@@ -59,6 +60,30 @@ For inbound WhatsApp messages, use **Kapso Trigger** with scope **Phone Number**
 
 For outbound messages, use **Kapso** with the **Send Text**, **Send Template**, or **Send Raw Payload** operations. The raw payload operation mirrors the WhatsApp Cloud API payload sent to `/{phone_number_id}/messages`.
 
+## Example workflows
+
+### Inbound WhatsApp message to n8n workflow
+
+1. Add **Kapso Trigger** as the first node.
+2. Set **Scope** to **Phone Number**.
+3. Enter the Meta `phone_number_id` for the WhatsApp sender managed in Kapso.
+4. Keep **Events** set to `whatsapp.message.received`.
+5. Leave **Verify Signature** enabled in production.
+6. Connect any downstream n8n nodes that should process the inbound message payload.
+
+This workflow starts whenever Kapso delivers a WhatsApp inbound message webhook to n8n.
+
+### Send a WhatsApp reply through Kapso
+
+1. Add a **Kapso** node after any trigger or workflow step.
+2. Set **Resource** to **WhatsApp Message**.
+3. Set **Operation** to **Send Text**.
+4. Enter the sender **Phone Number ID**.
+5. Enter the recipient phone number in international format without `+`, for example `15551234567`.
+6. Set **Message** to a static value or an n8n expression from an earlier node.
+
+Use **Send Template** instead when sending approved WhatsApp template messages outside the customer service window.
+
 ## Local testing
 
 Run the package in a local n8n instance with:
@@ -92,6 +117,10 @@ For local manual testing, disable **Verify Signature** or send a valid `X-Webhoo
 - [Kapso](https://kapso.ai)
 
 ## Version history
+
+### 0.1.2
+
+Adds example workflow documentation and Kapso package author metadata for verification.
 
 ### 0.1.1
 

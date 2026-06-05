@@ -1,6 +1,6 @@
 {
 	"name": "@kapso/n8n-nodes-kapso",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Kapso nodes for WhatsApp inbound triggers and outbound messaging in n8n.",
 	"license": "MIT",
 	"homepage": "https://github.com/gokapso/kapso-n8n-nodes#readme",
@@ -12,8 +12,8 @@
 		"automation"
 	],
 	"author": {
-		"name": "Gaonuk",
-		"email": "rodrigogaonagonzalez@gmail.com"
+		"name": "Kapso",
+		"email": "rodrigo@kap.so"
 	},
 	"repository": {
 		"type": "git",
