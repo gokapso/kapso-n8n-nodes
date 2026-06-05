@@ -9,7 +9,8 @@
 #
 # @n8n/node-cli ≥ 0.23.0 is required. Earlier versions do not support the
 # provenance flag passed by `npm run release` in CI, and the publish step will
-# fail. Check the version installed in this project with:
+# fail. npm Trusted Publisher commands require npm ≥ 11.10.0 and Node ≥ 22.14.0.
+# Check the node CLI version installed in this project with:
 #
 #   npm list @n8n/node-cli
 #
@@ -17,7 +18,7 @@
 #
 # ─── ONE-TIME SETUP ────────────────────────────────────────────────────────────
 #
-# Option A — OIDC Trusted Publishing (recommended, no long-lived secrets):
+# Option A — OIDC Trusted Publishing (recommended after the first publish):
 #   1. Log in to npmjs.com and open your package's settings.
 #   2. Under "Publish access" → "Trusted Publishers", click "Add a publisher".
 #   3. Select GitHub Actions and fill in:
@@ -25,12 +26,16 @@
 #        Repository name:  kapso-n8n-nodes
 #        Workflow name:    publish.yml
 #        Environment:      (leave blank unless you use GitHub Environments)
-#   4. Leave the NPM_TOKEN secret unset in this repository. GitHub's OIDC
+#        Allowed actions:  npm publish
+#   4. Or, after the first publish, run:
+#        npm trust github @kapso/n8n-nodes-kapso --repo gokapso/kapso-n8n-nodes --file publish.yml --allow-publish
+#   5. Leave the NPM_TOKEN secret unset in this repository. GitHub's OIDC
 #      token is used instead — no secret ever touches your repo settings.
 #
 # Option B — npm Automation Token (fallback):
 #   1. On npmjs.com: Access Tokens → Generate New Token → Granular Access Token.
-#      Scope it to this package with "Read and write" publish permission.
+#      For the first publish, scope it to @kapso with read-write package/scope
+#      permission and enable "bypass 2FA" if the account uses write 2FA.
 #   2. In GitHub: Settings → Secrets and variables → Actions → New secret.
 #      Name it NPM_TOKEN and paste the token value.
 #
@@ -78,8 +83,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          cache: 'npm'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
