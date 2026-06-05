@@ -1,6 +1,6 @@
 {
 	"name": "@kapso/n8n-nodes-kapso",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Kapso nodes for WhatsApp inbound triggers and outbound messaging in n8n.",
 	"license": "MIT",
 	"homepage": "https://github.com/gokapso/kapso-n8n-nodes#readme",
@@ -29,6 +29,7 @@
 		"dev": "n8n-node dev",
 		"lint": "n8n-node lint",
 		"lint:fix": "n8n-node lint --fix",
+		"test": "npm run lint && npm run build",
 		"release": "n8n-node release",
 		"prepublishOnly": "n8n-node prerelease"
 	},

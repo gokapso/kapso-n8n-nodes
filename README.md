@@ -93,6 +93,10 @@ For local manual testing, disable **Verify Signature** or send a valid `X-Webhoo
 
 ## Version history
 
+### 0.1.1
+
+Adds an `npm run test` verification script for n8n Creator Portal checks.
+
 ### 0.1.0
 
 Initial Kapso trigger and action nodes.
