@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-kapso.kapso",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Communication", "Marketing"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://docs.kapso.ai"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://docs.kapso.ai"
+			}
+		]
+	}
+}

@@ -1,0 +1,59 @@
+{
+	"name": "@kapso/n8n-nodes-kapso",
+	"version": "0.1.0",
+	"description": "Kapso nodes for WhatsApp inbound triggers and outbound messaging in n8n.",
+	"license": "MIT",
+	"homepage": "https://github.com/gokapso/kapso-n8n-nodes#readme",
+	"keywords": [
+		"n8n-community-node-package",
+		"kapso",
+		"whatsapp",
+		"whatsapp-cloud-api",
+		"automation"
+	],
+	"author": {
+		"name": "Gaonuk",
+		"email": "rodrigogaonagonzalez@gmail.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/gokapso/kapso-n8n-nodes.git"
+	},
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
+	},
+	"scripts": {
+		"build": "n8n-node build",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"release": "n8n-node release",
+		"prepublishOnly": "n8n-node prerelease"
+	},
+	"files": [
+		"dist"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"strict": true,
+		"credentials": [
+			"dist/credentials/KapsoApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Kapso/Kapso.node.js",
+			"dist/nodes/KapsoTrigger/KapsoTrigger.node.js"
+		]
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "*",
+		"eslint": "9.29.0",
+		"prettier": "3.6.2",
+		"release-it": "^19.0.4",
+		"typescript": "5.9.2"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
+}
