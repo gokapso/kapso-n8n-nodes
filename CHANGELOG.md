@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- Log Kapso webhook deletion failures during trigger deactivation.
+- Use supported n8n codex categories for Kapso nodes.
+
 ## 0.1.2
 
 - Add example workflow documentation for n8n verification.

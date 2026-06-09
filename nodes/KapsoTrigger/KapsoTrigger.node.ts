@@ -331,12 +331,25 @@ export class KapsoTrigger implements INodeType {
 					return true;
 				}
 
+				const scope = this.getNodeParameter('scope') as string;
+				const path = `${getWebhookCollectionPath(this, scope)}/${webhookId}`;
+
 				try {
 					await kapsoPlatformRequest.call(this, {
 						method: 'DELETE',
-						path: `${getWebhookCollectionPath(this, this.getNodeParameter('scope') as string)}/${webhookId}`,
+						path,
 					});
-				} catch {
+				} catch (error) {
+					this.logger.warn('Kapso webhook deletion failed', {
+						error,
+						webhookId,
+						scope,
+						path,
+						message: getKapsoErrorMessage(error),
+						description: getKapsoErrorDescription(error),
+						httpCode: getKapsoErrorHttpCode(error),
+					});
+
 					return false;
 				}
 
