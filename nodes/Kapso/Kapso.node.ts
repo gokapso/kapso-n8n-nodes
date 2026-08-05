@@ -18,6 +18,11 @@ import {
 	parseJsonArray,
 	parseJsonObject,
 } from './GenericFunctions';
+import {
+	resolveMessageRecipient,
+	type MessageRecipientFields,
+	type RecipientMode,
+} from './RecipientFunctions';
 
 export class Kapso implements INodeType {
 	description: INodeTypeDescription = {
@@ -137,6 +142,36 @@ export class Kapso implements INodeType {
 				description: 'Meta phone_number_id to send from',
 			},
 			{
+				displayName: 'Recipient Mode',
+				name: 'recipientMode',
+				type: 'options',
+				options: [
+					{
+						name: 'Business-Scoped User ID (BSUID)',
+						value: 'businessScopedUserId',
+						description: 'Address the recipient by BSUID or parent BSUID',
+					},
+					{
+						name: 'Phone Number',
+						value: 'phoneNumber',
+						description: 'Address the recipient by WhatsApp phone number',
+					},
+					{
+						name: 'Phone Number and BSUID',
+						value: 'both',
+						description: 'Send both identifiers; WhatsApp gives the phone number precedence',
+					},
+				],
+				default: 'phoneNumber',
+				displayOptions: {
+					show: {
+						resource: ['whatsAppMessage'],
+						operation: ['sendTemplate', 'sendText'],
+					},
+				},
+				description: 'How to address the WhatsApp recipient',
+			},
+			{
 				displayName: 'Recipient Phone Number',
 				name: 'to',
 				type: 'string',
@@ -147,9 +182,27 @@ export class Kapso implements INodeType {
 					show: {
 						resource: ['whatsAppMessage'],
 						operation: ['sendTemplate', 'sendText'],
+						recipientMode: ['phoneNumber', 'both'],
 					},
 				},
 				description: 'Recipient WhatsApp phone number, usually country code plus number without +',
+			},
+			{
+				displayName: 'Recipient BSUID',
+				name: 'businessScopedUserId',
+				type: 'string',
+				required: true,
+				default: '',
+				placeholder: 'US.13491208655302741918',
+				displayOptions: {
+					show: {
+						resource: ['whatsAppMessage'],
+						operation: ['sendTemplate', 'sendText'],
+						recipientMode: ['businessScopedUserId', 'both'],
+					},
+				},
+				description:
+					'Full business-scoped user ID or parent BSUID. Authentication templates cannot be sent to BSUID recipients.',
 			},
 			{
 				displayName: 'Message',
@@ -292,6 +345,28 @@ export class Kapso implements INodeType {
 				},
 				options: [
 					{
+						displayName: 'After Cursor',
+						name: 'after',
+						type: 'string',
+						default: '',
+						description: 'Cursor after which to return newer messages',
+					},
+					{
+						displayName: 'Before Cursor',
+						name: 'before',
+						type: 'string',
+						default: '',
+						description: 'Cursor before which to return older messages',
+					},
+					{
+						displayName: 'Business-Scoped User ID',
+						name: 'business_scoped_user_id',
+						type: 'string',
+						default: '',
+						placeholder: 'US.13491208655302741918',
+						description: 'Only return messages for this exact WhatsApp BSUID',
+					},
+					{
 						displayName: 'Conversation ID',
 						name: 'conversation_id',
 						type: 'string',
@@ -314,6 +389,17 @@ export class Kapso implements INodeType {
 						],
 						default: 'inbound',
 						description: 'Only return messages with this direction',
+					},
+					{
+						displayName: 'Limit',
+						name: 'limit',
+						type: 'number',
+						default: 50,
+						typeOptions: {
+							minValue: 1,
+							maxValue: 100,
+						},
+						description: 'Max number of results to return',
 					},
 					{
 						displayName: 'Message Type',
@@ -352,7 +438,7 @@ export class Kapso implements INodeType {
 						typeOptions: {
 							minValue: 1,
 						},
-						description: 'Page number to return',
+						description: 'Legacy page number to return; cursor pagination is preferred',
 					},
 					{
 						displayName: 'Per Page',
@@ -363,14 +449,14 @@ export class Kapso implements INodeType {
 							minValue: 1,
 							maxValue: 100,
 						},
-						description: 'Number of messages to return per page',
+						description: 'Legacy page size; the Limit option is preferred',
 					},
 					{
 						displayName: 'Phone Number',
 						name: 'phone_number',
 						type: 'string',
 						default: '',
-						description: 'Only return conversations with this customer phone number',
+						description: 'Only return messages for contacts matching this phone number',
 					},
 					{
 						displayName: 'Phone Number ID',
@@ -538,13 +624,13 @@ async function executeOperation(
 	const phoneNumberId = this.getNodeParameter('phoneNumberId', itemIndex) as string;
 
 	if (operation === 'sendText') {
-		const to = normalizeRecipient(this.getNodeParameter('to', itemIndex) as string);
+		const recipient = getMessageRecipientFields.call(this, itemIndex);
 		const message = this.getNodeParameter('message', itemIndex) as string;
 		const previewUrl = this.getNodeParameter('previewUrl', itemIndex) as boolean;
 		const replyToMessageId = this.getNodeParameter('replyToMessageId', itemIndex, '') as string;
 		const payload: IDataObject = {
 			messaging_product: 'whatsapp',
-			to,
+			...recipient,
 			type: 'text',
 			text: {
 				body: message,
@@ -562,7 +648,7 @@ async function executeOperation(
 	}
 
 	if (operation === 'sendTemplate') {
-		const to = normalizeRecipient(this.getNodeParameter('to', itemIndex) as string);
+		const recipient = getMessageRecipientFields.call(this, itemIndex);
 		const templateName = this.getNodeParameter('templateName', itemIndex) as string;
 		const languageCode = this.getNodeParameter('languageCode', itemIndex) as string;
 		const components = parseJsonArray(
@@ -582,7 +668,7 @@ async function executeOperation(
 
 		return await sendMessage.call(this, phoneNumberId, {
 			messaging_product: 'whatsapp',
-			to,
+			...recipient,
 			type: 'template',
 			template,
 		});
@@ -644,6 +730,21 @@ function removeEmptyValues(values: IDataObject): IDataObject {
 	) as IDataObject;
 }
 
-function normalizeRecipient(value: string): string {
-	return value.replace(/[^\d]/g, '');
+function getMessageRecipientFields(
+	this: IExecuteFunctions,
+	itemIndex: number,
+): MessageRecipientFields {
+	const mode = this.getNodeParameter('recipientMode', itemIndex, 'phoneNumber') as RecipientMode;
+	const phoneNumber = this.getNodeParameter('to', itemIndex, '') as string;
+	const businessScopedUserId = this.getNodeParameter(
+		'businessScopedUserId',
+		itemIndex,
+		'',
+	) as string;
+
+	try {
+		return resolveMessageRecipient(mode, phoneNumber, businessScopedUserId);
+	} catch (error) {
+		throw new NodeOperationError(this.getNode(), (error as Error).message, { itemIndex });
+	}
 }

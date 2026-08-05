@@ -19,25 +19,7 @@ import {
 	getKapsoErrorMessage,
 	kapsoPlatformRequest,
 } from '../Kapso/GenericFunctions';
-
-const PHONE_NUMBER_EVENTS = [
-	'whatsapp.message.received',
-	'whatsapp.message.sent',
-	'whatsapp.message.delivered',
-	'whatsapp.message.read',
-	'whatsapp.message.failed',
-	'whatsapp.conversation.created',
-	'whatsapp.conversation.ended',
-	'whatsapp.conversation.inactive',
-];
-
-const PROJECT_EVENTS = [
-	'whatsapp.config.created',
-	'whatsapp.phone_number.created',
-	'whatsapp.phone_number.deleted',
-	'workflow.execution.handoff',
-	'workflow.execution.failed',
-];
+import { PHONE_NUMBER_EVENTS, PROJECT_EVENTS } from './EventTypes';
 
 export class KapsoTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -604,7 +586,10 @@ function getHeaderValue(headers: IDataObject, name: string): string | undefined 
 	return undefined;
 }
 
-function normalizeWebhookOutput(bodyData: unknown, metadata: IDataObject): INodeExecutionData[] {
+export function normalizeWebhookOutput(
+	bodyData: unknown,
+	metadata: IDataObject,
+): INodeExecutionData[] {
 	const rawItems = Array.isArray(bodyData) ? bodyData : [bodyData];
 
 	return rawItems.map((item) => {
