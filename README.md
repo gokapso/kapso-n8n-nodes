@@ -58,6 +58,8 @@ Generated with the official `@n8n/create-node` scaffold and tested against the i
 
 For inbound WhatsApp messages, use **Kapso Trigger** with scope **Phone Number**, enter the Meta `phone_number_id`, and subscribe to `whatsapp.message.received`.
 
+Inbound WhatsApp identity is not always phone-based. A normalized Kapso payload can contain `message.from_user_id`, `message.username`, `conversation.business_scoped_user_id`, and `conversation.parent_business_scoped_user_id` while `message.from` or `conversation.phone_number` is absent. Keep the BSUID fields in downstream storage and match by BSUID before phone number.
+
 For outbound messages, use **Kapso** with the **Send Text**, **Send Template**, or **Send Raw Payload** operations. The raw payload operation mirrors the WhatsApp Cloud API payload sent to `/{phone_number_id}/messages`.
 
 ## Example workflows
@@ -79,10 +81,17 @@ This workflow starts whenever Kapso delivers a WhatsApp inbound message webhook 
 2. Set **Resource** to **WhatsApp Message**.
 3. Set **Operation** to **Send Text**.
 4. Enter the sender **Phone Number ID**.
-5. Enter the recipient phone number in international format without `+`, for example `15551234567`.
-6. Set **Message** to a static value or an n8n expression from an earlier node.
+5. Choose **Recipient Mode**:
+   - **Phone Number** when the inbound payload includes a phone number.
+   - **Business-Scoped User ID (BSUID)** when only a BSUID is available.
+   - **Phone Number and BSUID** when both are available. WhatsApp gives the phone number precedence.
+6. Enter the corresponding recipient identifiers. BSUIDs must be kept whole, for example `US.13491208655302741918`.
+7. Set **Message** to a static value or an n8n expression from an earlier node.
 
 Use **Send Template** instead when sending approved WhatsApp template messages outside the customer service window.
+Authentication templates cannot be sent to BSUID recipients.
+
+To react when Meta changes a contact's BSUID, subscribe the trigger to `whatsapp.contact.identity_changed`. Its payload contains the updated `contact` plus the previous BSUID values so downstream records can be re-keyed safely.
 
 ## Local testing
 
@@ -114,9 +123,20 @@ For local manual testing, disable **Verify Signature** or send a valid `X-Webhoo
 
 - [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
 - [n8n creating nodes documentation](https://docs.n8n.io/integrations/creating-nodes/overview/)
+- [Kapso business-scoped user IDs guide](https://kapso.com/guides/business-scoped-user-ids)
 - [Kapso](https://kapso.ai)
 
 ## Version history
+
+### Unreleased
+
+- Add BSUID-aware text and template recipients.
+- Add BSUID message filtering and the contact identity changed trigger event.
+- Document nullable phone identity and BSUID reply routing.
+
+### 0.1.3
+
+Adds verification metadata fixes and supported n8n codex categories.
 
 ### 0.1.2
 

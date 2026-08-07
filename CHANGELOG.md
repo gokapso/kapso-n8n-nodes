@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Add phone number, BSUID, and combined recipient modes for text and template messages.
+- Add the `whatsapp.contact.identity_changed` trigger event.
+- Add BSUID filtering and cursor options when listing messages.
+- Document BSUID-only inbound payloads and outbound reply routing.
+
 ## 0.1.3
 
 - Log Kapso webhook deletion failures during trigger deactivation.
