@@ -128,7 +128,7 @@ For local manual testing, disable **Verify Signature** or send a valid `X-Webhoo
 
 ## Version history
 
-### Unreleased
+### 0.2.0
 
 - Add BSUID-aware text and template recipients.
 - Add BSUID message filtering and the contact identity changed trigger event.

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
 
 - Add phone number, BSUID, and combined recipient modes for text and template messages.
 - Add the `whatsapp.contact.identity_changed` trigger event.
