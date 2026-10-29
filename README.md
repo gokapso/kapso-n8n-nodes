@@ -93,6 +93,21 @@ Authentication templates cannot be sent to BSUID recipients.
 
 To react when Meta changes a contact's BSUID, subscribe the trigger to `whatsapp.contact.identity_changed`. Its payload contains the updated `contact` plus the previous BSUID values so downstream records can be re-keyed safely.
 
+## Dependency policy
+
+Keep direct `dependencies`, `devDependencies`, and `optionalDependencies` at exact versions. `.npmrc` enables exact saves for future additions. Update dependencies explicitly in a PR that includes both `package.json` and the canonical `package-lock.json`, reviews any transitive changes, and passes the checks below. Use `npm install <package>@<version>` (with `--save-dev` or `--save-optional` as appropriate) to keep that lockfile current; do not commit additional package-manager lockfiles.
+
+Use `npm ci` for clean, frozen installs, as CI does, and Bun to run checks:
+
+```bash
+npm ci
+bun run test
+bun run tsc --noEmit --incremental false
+npm pack --dry-run --ignore-scripts
+```
+
+Keep peer dependencies and engine constraints as compatibility declarations. In particular, `n8n-workflow: "*"` remains the existing peer contract. Exact direct versions and the repository lockfile do not freeze transitive dependencies for npm consumers or remediate vulnerabilities; handle security updates in separate, validated PRs.
+
 ## Local testing
 
 Run the package in a local n8n instance with:
